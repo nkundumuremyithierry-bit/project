@@ -3,14 +3,9 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
-const ITEMS = [
-  'Steel Bars','Wheelbarrows','Ceramic Tiles','Cement',
-  'Painting Brush','Color Paint','Masonry Nail','Iron Sheet',
-];
-
 const emptyForm = {
-  itemname: '', description: '', quantityin: '',
-  suppliername: '', stockindate: new Date().toISOString().slice(0,10),
+  item_id: '', supplier_id: '', description: '',
+  quantityin: '', stockindate: new Date().toISOString().slice(0, 10),
 };
 
 /* ── Confirm Delete Dialog ──────────────────────────────────── */
@@ -38,20 +33,18 @@ const ConfirmDialog = ({ record, onConfirm, onCancel }) => {
 };
 
 /* ── Edit / Create Modal ────────────────────────────────────── */
-const StockInModal = ({ mode, initial, onClose, onSaved }) => {
+const StockInModal = ({ mode, initial, items, suppliers, onClose, onSaved }) => {
   const isEdit = mode === 'edit';
-  const [form, setForm] = useState(initial || emptyForm);
+  const [form, setForm]     = useState(initial || emptyForm);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
   const close = () => { setVisible(false); setTimeout(onClose, 240); };
-
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault(); setLoading(true);
     try {
       if (isEdit) {
         await api.put(`/stockin/${initial.id}`, form);
@@ -60,8 +53,7 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
         await api.post('/stockin', form);
         toast.success('Stock-in recorded!');
       }
-      onSaved();
-      close();
+      onSaved(); close();
     } catch (err) {
       toast.error(err.response?.data?.message || `Error ${isEdit ? 'updating' : 'saving'} record.`);
     } finally { setLoading(false); }
@@ -72,10 +64,9 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
       onMouseDown={e => e.target === e.currentTarget && close()}>
       <div className={`um-modal record-modal ${visible ? 'um-modal--in' : ''}`}>
 
-        {/* Header */}
         <div className="um-modal-header"
           style={{ background: isEdit ? 'linear-gradient(135deg,#0f4c75,#1b6ca8)' : 'linear-gradient(135deg,#0f172a,#065f46)' }}>
-          <div className="um-modal-icon">{isEdit ? '✏️' : ''}</div>
+          <div className="um-modal-icon">{isEdit ? '✏️' : '📥'}</div>
           <div>
             <h2 className="um-modal-title">{isEdit ? 'Edit Stock-In Record' : 'New Stock-In'}</h2>
             <p className="um-modal-sub">{isEdit ? `Editing record #${initial.id}` : 'Record items received into store'}</p>
@@ -84,12 +75,13 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="um-form record-form-grid">
-          {/* Item Name */}
+
+          {/* Item */}
           <div className="um-field">
-            <label className="um-label">Item Name <span className="um-required">*</span></label>
-            <select className="um-input" name="itemname" value={form.itemname} onChange={handleChange} required>
+            <label className="um-label">Item <span className="um-required">*</span></label>
+            <select className="um-input" name="item_id" value={form.item_id} onChange={handleChange} required>
               <option value="">-- Select Item --</option>
-              {ITEMS.map(i => <option key={i} value={i}>{i}</option>)}
+              {items.map(i => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
             </select>
           </div>
 
@@ -102,9 +94,11 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
 
           {/* Supplier */}
           <div className="um-field">
-            <label className="um-label">Supplier Name</label>
-            <input className="um-input" name="suppliername" type="text"
-              value={form.suppliername} onChange={handleChange} placeholder="Supplier name (optional)" />
+            <label className="um-label">Supplier</label>
+            <select className="um-input" name="supplier_id" value={form.supplier_id} onChange={handleChange}>
+              <option value="">-- Select Supplier (optional) --</option>
+              {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
           </div>
 
           {/* Date */}
@@ -123,8 +117,9 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
 
           <div className="um-actions">
             <button type="button" className="um-btn-cancel" onClick={close}>Cancel</button>
-            <button type="submit" className="um-btn-submit" style={{ background: isEdit ? 'linear-gradient(135deg,#0f4c75,#1b6ca8)' : 'linear-gradient(135deg,#065f46,#059669)' }} disabled={loading}>
-              {loading ? <><span className="btn-spinner" /> Saving…</> : isEdit ? ' Update Record' : '✅ Save Record'}
+            <button type="submit" className="um-btn-submit" disabled={loading}
+              style={{ background: isEdit ? 'linear-gradient(135deg,#0f4c75,#1b6ca8)' : 'linear-gradient(135deg,#065f46,#059669)' }}>
+              {loading ? <><span className="btn-spinner" /> Saving…</> : isEdit ? '✅ Update Record' : '✅ Save Record'}
             </button>
           </div>
         </form>
@@ -137,45 +132,63 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
 const StockIn = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
-  const [records, setRecords]   = useState([]);
-  const [modal, setModal]       = useState(null); // { mode, record? }
+  const [records, setRecords]       = useState([]);
+  const [items, setItems]           = useState([]);
+  const [suppliers, setSuppliers]   = useState([]);
+  const [modal, setModal]           = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [search, setSearch]     = useState('');
+  const [search, setSearch]         = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
-  const fetchRecords = async () => {
+  const fetchAll = async () => {
     try {
-      const params = {};
-      if (search)     params.search = search;
-      if (dateFilter) params.date   = dateFilter;
-      const res = await api.get('/stockin', { params });
-      setRecords(res.data);
-    } catch { toast.error('Failed to load records.'); }
+      const [rRes, iRes, sRes] = await Promise.all([
+        api.get('/stockin', { params: { search: search || undefined, date: dateFilter || undefined } }),
+        api.get('/items'),
+        api.get('/suppliers'),
+      ]);
+      setRecords(rRes.data);
+      setItems(iRes.data);
+      setSuppliers(sRes.data);
+    } catch { toast.error('Failed to load data.'); }
   };
 
-  useEffect(() => { fetchRecords(); }, [search, dateFilter]);
+  useEffect(() => { fetchAll(); }, [search, dateFilter]);
 
   const handleDelete = async () => {
     try {
       await api.delete(`/stockin/${deleteTarget.id}`);
       toast.success('Record deleted.');
-      fetchRecords();
+      fetchAll();
     } catch { toast.error('Failed to delete record.'); }
     setDeleteTarget(null);
   };
 
-  const totalIn  = records.reduce((s, r) => s + Number(r.quantityin), 0);
+  const openEdit = r => setModal({
+    mode: 'edit',
+    record: {
+      id: r.id,
+      item_id: r.item_id,
+      supplier_id: r.supplier_id || '',
+      description: r.description || '',
+      quantityin: r.quantityin,
+      stockindate: r.stockindate?.slice(0, 10),
+    },
+  });
+
+  const totalIn    = records.reduce((s, r) => s + Number(r.quantityin), 0);
   const uniqueItems = [...new Set(records.map(r => r.itemname))].length;
 
   return (
     <div className="page">
-      {/* Modals */}
       {modal && (
         <StockInModal
           mode={modal.mode}
           initial={modal.record}
+          items={items}
+          suppliers={suppliers}
           onClose={() => setModal(null)}
-          onSaved={fetchRecords}
+          onSaved={fetchAll}
         />
       )}
       {deleteTarget && (
@@ -189,7 +202,7 @@ const StockIn = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title"> Stock In</h1>
+          <h1 className="page-title">📦 Stock In</h1>
           <p className="page-sub">Record and manage items received into the store</p>
         </div>
         <button id="add-stockin-btn" className="btn-primary"
@@ -233,7 +246,7 @@ const StockIn = () => {
           <table className="table">
             <thead>
               <tr>
-                <th>#</th><th>Item Name</th><th>Description</th>
+                <th>#</th><th>Item</th><th>Description</th>
                 <th>Qty In</th><th>Total Qty</th>
                 <th>Supplier</th><th>Date</th><th>Recorded By</th><th>Actions</th>
               </tr>
@@ -246,29 +259,33 @@ const StockIn = () => {
               ) : records.map((r, i) => (
                 <tr key={r.id} className="record-row">
                   <td style={{ color: '#94a3b8', fontSize: 12 }}>{i + 1}</td>
-                  <td><span className="item-badge">{r.itemname}</span></td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="item-badge">{r.itemname}</span>
+                      {r.item_unit && <span style={{ fontSize: 11, color: '#94a3b8' }}>/{r.item_unit}</span>}
+                    </div>
+                  </td>
                   <td style={{ fontSize: 13, color: '#64748b', maxWidth: 160 }}>
                     <span title={r.description}>{r.description ? r.description.slice(0, 40) + (r.description.length > 40 ? '…' : '') : '—'}</span>
                   </td>
                   <td><span className="qty-in">+{r.quantityin}</span></td>
                   <td><strong style={{ fontSize: 14 }}>{r.totalquantityin}</strong></td>
-                  <td style={{ fontSize: 13 }}>{r.suppliername || '—'}</td>
-                  <td style={{ fontSize: 13 }}>{r.stockindate?.slice(0,10)}</td>
+                  <td style={{ fontSize: 13 }}>
+                    {r.suppliername
+                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ fontSize: 14 }}>🏢</span>{r.suppliername}</span>
+                      : '—'}
+                  </td>
+                  <td style={{ fontSize: 13 }}>{r.stockindate?.slice(0, 10)}</td>
                   <td><span className="user-pill">{r.recorded_by}</span></td>
                   <td className="action-cell">
-                    {isAdmin && (
+                    {isAdmin ? (
                       <>
-                        <button className="btn-edit-icon" title="Edit record"
-                          onClick={() => setModal({ mode: 'edit', record: { id: r.id, itemname: r.itemname, description: r.description || '', quantityin: r.quantityin, suppliername: r.suppliername || '', stockindate: r.stockindate?.slice(0,10) } })}>
-                          ✏️
-                        </button>
-                        <button className="btn-delete" title="Delete record"
-                          onClick={() => setDeleteTarget(r)}>
-                          🗑️
-                        </button>
+                        <button className="btn-edit-icon" title="Edit record" onClick={() => openEdit(r)}>✏️</button>
+                        <button className="btn-delete" title="Delete record" onClick={() => setDeleteTarget(r)}>🗑️</button>
                       </>
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: 12 }}>View only</span>
                     )}
-                    {!isAdmin && <span style={{ color: '#94a3b8', fontSize: 12 }}>View only</span>}
                   </td>
                 </tr>
               ))}
