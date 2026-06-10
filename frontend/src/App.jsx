@@ -10,6 +10,9 @@ import StockIn from './pages/StockIn';
 import StockOut from './pages/StockOut';
 import Report from './pages/Report';
 import Users from './pages/Users';
+import Inventory from './pages/Inventory';
+import Alerts from './pages/Alerts';
+import Settings from './pages/Settings';
 import toast from 'react-hot-toast';
 
 /* ── Profile Widget ─────────────────────────────────────────── */
@@ -183,6 +186,21 @@ function App() {
           <Route path="/users" element={
             <ProtectedRoute>
               <Layout><Users /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/inventory" element={
+            <ProtectedRoute>
+              <Layout><Inventory /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/alerts" element={
+            <ProtectedRoute>
+              <Layout><Alerts /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Layout><Settings /></Layout>
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

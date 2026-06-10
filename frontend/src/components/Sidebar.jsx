@@ -4,11 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const allNavItems = [
-  { to: '/',         label: 'Dashboard', icon: '🏠', roles: ['admin', 'staff'] },
-  { to: '/stockin',  label: 'Stock In',  icon: '📦', roles: ['admin', 'staff'] },
-  { to: '/stockout', label: 'Stock Out', icon: '📤', roles: ['admin', 'staff'] },
-  { to: '/users',    label: 'Users',     icon: '👥', roles: ['admin'] },         // admin only
-  { to: '/report',   label: 'Report',    icon: '📊', roles: ['admin', 'staff'] },
+  { to: '/',          label: 'Dashboard',  icon: '🏠', roles: ['admin', 'staff'] },
+  { to: '/inventory', label: 'Inventory',  icon: '📋', roles: ['admin', 'staff'] },
+  { to: '/stockin',   label: 'Stock In',   icon: '📦', roles: ['admin', 'staff'] },
+  { to: '/stockout',  label: 'Stock Out',  icon: '📤', roles: ['admin', 'staff'] },
+  { to: '/alerts',    label: 'Alerts',     icon: '⚠️', roles: ['admin', 'staff'] },
+  { to: '/report',    label: 'Report',     icon: '📊', roles: ['admin', 'staff'] },
+  { to: '/users',     label: 'Users',      icon: '👥', roles: ['admin'] },
+  { to: '/settings',  label: 'Settings',   icon: '⚙️', roles: ['admin', 'staff'] },
 ];
 
 const Sidebar = ({ open, onClose }) => {

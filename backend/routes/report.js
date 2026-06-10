@@ -157,5 +157,76 @@ router.get('/items', requireAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// GET /api/report/inventory — real-time stock per item with status
+router.get('/inventory', requireAuth, async (req, res) => {
+  try {
+    const [inRows]  = await db.query('SELECT itemname, SUM(quantityin) AS totalIn, MAX(stockindate) AS lastIn FROM stockin GROUP BY itemname');
+    const [outRows] = await db.query('SELECT itemname, SUM(quantityout) AS totalOut, MAX(stockoutdate) AS lastOut FROM stockout GROUP BY itemname');
 
+    const inMap  = {};
+    const outMap = {};
+    inRows.forEach(r  => { inMap[r.itemname]  = { totalIn: parseInt(r.totalIn) || 0, lastIn: r.lastIn }; });
+    outRows.forEach(r => { outMap[r.itemname] = { totalOut: parseInt(r.totalOut) || 0, lastOut: r.lastOut }; });
+
+    const allItems = new Set([...ITEMS, ...Object.keys(inMap), ...Object.keys(outMap)]);
+    const result = Array.from(allItems).map(item => {
+      const totalIn  = inMap[item]?.totalIn  || 0;
+      const totalOut = outMap[item]?.totalOut || 0;
+      const remaining = totalIn - totalOut;
+      const pct = totalIn > 0 ? Math.round((totalOut / totalIn) * 100) : 0;
+      const status = remaining <= 0 ? 'out' : remaining < totalIn * 0.2 ? 'low' : 'ok';
+      return {
+        itemname: item,
+        totalIn,
+        totalOut,
+        remaining,
+        usagePct: pct,
+        status,
+        lastIn:  inMap[item]?.lastIn  || null,
+        lastOut: outMap[item]?.lastOut || null,
+      };
+    }).sort((a, b) => a.itemname.localeCompare(b.itemname));
+
+    return res.json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// GET /api/report/alerts — items that are low or out of stock
+router.get('/alerts', requireAuth, async (req, res) => {
+  try {
+    const [inRows]  = await db.query('SELECT itemname, SUM(quantityin) AS totalIn FROM stockin GROUP BY itemname');
+    const [outRows] = await db.query('SELECT itemname, SUM(quantityout) AS totalOut FROM stockout GROUP BY itemname');
+
+    const inMap  = {};
+    const outMap = {};
+    inRows.forEach(r  => { inMap[r.itemname]  = parseInt(r.totalIn)  || 0; });
+    outRows.forEach(r => { outMap[r.itemname] = parseInt(r.totalOut) || 0; });
+
+    const allItems = new Set([...ITEMS, ...Object.keys(inMap), ...Object.keys(outMap)]);
+    const alerts = [];
+
+    Array.from(allItems).forEach(item => {
+      const totalIn  = inMap[item]  || 0;
+      const totalOut = outMap[item] || 0;
+      const remaining = totalIn - totalOut;
+      const pct = totalIn > 0 ? Math.round((totalOut / totalIn) * 100) : 0;
+
+      if (remaining <= 0) {
+        alerts.push({ itemname: item, totalIn, totalOut, remaining, usagePct: pct, severity: 'critical', message: 'Out of stock! Immediate restock required.' });
+      } else if (remaining < totalIn * 0.2) {
+        alerts.push({ itemname: item, totalIn, totalOut, remaining, usagePct: pct, severity: 'warning', message: `Low stock — only ${remaining} units left (${100 - pct}% remaining).` });
+      }
+    });
+
+    alerts.sort((a, b) => (a.severity === 'critical' ? -1 : 1));
+    return res.json({ count: alerts.length, alerts });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+module.exports = router;
