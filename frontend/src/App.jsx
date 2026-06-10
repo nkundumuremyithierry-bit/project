@@ -13,6 +13,8 @@ import Users from './pages/Users';
 import Inventory from './pages/Inventory';
 import Alerts from './pages/Alerts';
 import Settings from './pages/Settings';
+import Items from './pages/Items';
+import Suppliers from './pages/Suppliers';
 import toast from 'react-hot-toast';
 
 /* ── Profile Widget ─────────────────────────────────────────── */
@@ -201,6 +203,16 @@ function App() {
           <Route path="/settings" element={
             <ProtectedRoute>
               <Layout><Settings /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/items" element={
+            <ProtectedRoute>
+              <Layout><Items /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/suppliers" element={
+            <ProtectedRoute>
+              <Layout><Suppliers /></Layout>
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

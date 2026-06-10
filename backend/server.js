@@ -3,10 +3,12 @@ const session = require('express-session');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const stockinRoutes = require('./routes/stockin');
+const authRoutes     = require('./routes/auth');
+const stockinRoutes  = require('./routes/stockin');
 const stockoutRoutes = require('./routes/stockout');
-const reportRoutes = require('./routes/report');
+const reportRoutes   = require('./routes/report');
+const itemsRoutes    = require('./routes/items');
+const suppliersRoutes = require('./routes/suppliers');
 
 const app = express();
 
@@ -31,10 +33,12 @@ app.use(session({
 }));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/stockin', stockinRoutes);
-app.use('/api/stockout', stockoutRoutes);
-app.use('/api/report', reportRoutes);
+app.use('/api/auth',      authRoutes);
+app.use('/api/stockin',   stockinRoutes);
+app.use('/api/stockout',  stockoutRoutes);
+app.use('/api/report',    reportRoutes);
+app.use('/api/items',     itemsRoutes);
+app.use('/api/suppliers', suppliersRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ message: 'DAB Enterprise SMS API running.' }));

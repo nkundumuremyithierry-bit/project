@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 const fmt = n => Number(n ?? 0).toLocaleString();
 
 export default function Alerts() {
-  const [data, setData]       = useState({ count: 0, alerts: [] });
+  const [data, setData] = useState({ count: 0, alerts: [] });
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(new Set());
 
@@ -23,7 +23,7 @@ export default function Alerts() {
 
   const critical = data.alerts.filter(a => a.severity === 'critical' && !dismissed.has(a.itemname));
   const warnings = data.alerts.filter(a => a.severity === 'warning' && !dismissed.has(a.itemname));
-  const visible  = [...critical, ...warnings];
+  const visible = [...critical, ...warnings];
 
   const dismiss = (name) => {
     setDismissed(prev => new Set([...prev, name]));
@@ -46,7 +46,7 @@ export default function Alerts() {
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            ⚠️ Stock Alerts
+            Stock Alerts
             {visible.length > 0 && (
               <span style={{
                 marginLeft: 12, background: '#ef4444', color: '#fff',
@@ -112,7 +112,7 @@ export default function Alerts() {
             No critical or low-stock alerts at this time. Keep up the great work!
           </p>
           <Link to="/inventory" className="btn-primary" style={{ display: 'inline-block', marginTop: 20 }}>
-            📋 View Full Inventory
+            View Full Inventory
           </Link>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function Alerts() {
       {critical.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <h2 style={{ color: '#dc2626', fontWeight: 700, fontSize: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-            🔴 Critical — Out of Stock
+            Critical — Out of Stock
             <span style={{ background: '#fee2e2', color: '#dc2626', borderRadius: 20, padding: '2px 10px', fontSize: 12 }}>{critical.length} items</span>
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -136,7 +136,7 @@ export default function Alerts() {
       {warnings.length > 0 && (
         <div>
           <h2 style={{ color: '#ca8a04', fontWeight: 700, fontSize: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-            ⚠️ Warning — Low Stock
+            Warning — Low Stock
             <span style={{ background: '#fef9c3', color: '#ca8a04', borderRadius: 20, padding: '2px 10px', fontSize: 12 }}>{warnings.length} items</span>
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -154,10 +154,10 @@ export default function Alerts() {
 function AlertCard({ alert, onDismiss }) {
   const isCritical = alert.severity === 'critical';
   const borderColor = isCritical ? '#ef4444' : '#f59e0b';
-  const bgColor     = isCritical ? '#fff5f5' : '#fffbeb';
-  const iconBg      = isCritical ? '#fee2e2' : '#fef3c7';
-  const textColor   = isCritical ? '#991b1b' : '#92400e';
-  const pct         = Math.min(alert.usagePct, 100);
+  const bgColor = isCritical ? '#fff5f5' : '#fffbeb';
+  const iconBg = isCritical ? '#fee2e2' : '#fef3c7';
+  const textColor = isCritical ? '#991b1b' : '#92400e';
+  const pct = Math.min(alert.usagePct, 100);
 
   return (
     <div style={{
@@ -181,7 +181,7 @@ function AlertCard({ alert, onDismiss }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 24, flexShrink: 0,
       }}>
-        {isCritical ? '🔴' : '⚠️'}
+        {isCritical ? '' : ''}
       </div>
 
       {/* Info */}
@@ -214,9 +214,9 @@ function AlertCard({ alert, onDismiss }) {
         </div>
         {/* Stats row */}
         <div style={{ display: 'flex', gap: 20, marginTop: 8, fontSize: 12, color: textColor, opacity: .7 }}>
-          <span>📥 Received: <strong>{alert.totalIn}</strong></span>
-          <span>📤 Issued: <strong>{alert.totalOut}</strong></span>
-          <span>📦 Left: <strong style={{ color: isCritical ? '#dc2626' : '#ca8a04' }}>{alert.remaining}</strong></span>
+          <span> Received: <strong>{alert.totalIn}</strong></span>
+          <span> Issued: <strong>{alert.totalOut}</strong></span>
+          <span> Left: <strong style={{ color: isCritical ? '#dc2626' : '#ca8a04' }}>{alert.remaining}</strong></span>
         </div>
       </div>
 

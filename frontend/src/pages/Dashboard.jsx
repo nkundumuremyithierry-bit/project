@@ -20,8 +20,8 @@ ChartJS.register(
 const fmt = n => Number(n ?? 0).toLocaleString();
 
 const ITEM_COLORS = [
-  '#3b82f6','#f59e0b','#16a34a','#7c3aed',
-  '#db2777','#0891b2','#ea580c','#84cc16',
+  '#3b82f6', '#f59e0b', '#16a34a', '#7c3aed',
+  '#db2777', '#0891b2', '#ea580c', '#84cc16',
 ];
 
 /* ─── KPI Card ────────────────────────────────────────────── */
@@ -51,12 +51,12 @@ const SectionHead = ({ title, subtitle, children }) => (
 /* ══════════════════════════════════════════════════════════ */
 const Dashboard = () => {
   const { user } = useAuth();
-  const [summary,  setSummary]  = useState(null);
-  const [trend,    setTrend]    = useState([]);
-  const [items,    setItems]    = useState([]);
-  const [recent,   setRecent]   = useState({ in: [], out: [] });
+  const [summary, setSummary] = useState(null);
+  const [trend, setTrend] = useState([]);
+  const [items, setItems] = useState([]);
+  const [recent, setRecent] = useState({ in: [], out: [] });
   const [trendDays, setTrendDays] = useState(30);
-  const [loading,  setLoading]  = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -86,7 +86,7 @@ const Dashboard = () => {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  const netStock  = Number(summary?.totalStockIn ?? 0) - Number(summary?.totalStockOut ?? 0);
+  const netStock = Number(summary?.totalStockIn ?? 0) - Number(summary?.totalStockOut ?? 0);
   const stockRate = summary?.totalStockIn > 0
     ? Math.round((summary.totalStockOut / summary.totalStockIn) * 100)
     : 0;
@@ -97,11 +97,11 @@ const Dashboard = () => {
     return dt.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
   });
 
-  const periodTotalIn  = trend.reduce((s, d) => s + d.stockIn,  0);
+  const periodTotalIn = trend.reduce((s, d) => s + d.stockIn, 0);
   const periodTotalOut = trend.reduce((s, d) => s + d.stockOut, 0);
-  const periodNet      = periodTotalIn - periodTotalOut;
-  const peakIn         = Math.max(...trend.map(d => d.stockIn),  0);
-  const peakOut        = Math.max(...trend.map(d => d.stockOut), 0);
+  const periodNet = periodTotalIn - periodTotalOut;
+  const peakIn = Math.max(...trend.map(d => d.stockIn), 0);
+  const peakOut = Math.max(...trend.map(d => d.stockOut), 0);
 
   const lineData = {
     labels: trendLabels,
@@ -298,7 +298,7 @@ const Dashboard = () => {
       <div className="dash-hero">
         <div className="dash-hero-left">
           <div className="dash-greeting">
-             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},&nbsp;
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},&nbsp;
             <strong>{user?.username}</strong>
           </div>
           <h1 className="dash-title">Store Dashboard</h1>
@@ -322,12 +322,12 @@ const Dashboard = () => {
 
       {/* ══ KPI CARDS ════════════════════════════════════════ */}
       <div className="kpi-grid">
-        <KpiCard label="Items Received"   value={fmt(summary?.totalStockIn)}    icon="" color="blue"   sub={`${summary?.stockInRecords} transactions`}  to="/stockin"  />
-        <KpiCard label="Items Issued"     value={fmt(summary?.totalStockOut)}   icon="" color="amber"  sub={`${summary?.stockOutRecords} transactions`} to="/stockout" />
-        <KpiCard label="Net Stock"        value={fmt(netStock)}                 icon="" color={netStock >= 0 ? 'green' : 'red'} sub="Received − Issued" />
-        <KpiCard label="Issue Rate"       value={`${stockRate}%`}              icon="" color="purple" sub="Of total received issued" />
-        <KpiCard label="Stock-In Records" value={fmt(summary?.stockInRecords)}  icon="" color="cyan"   to="/stockin"  />
-        <KpiCard label="System Users"     value={fmt(summary?.totalUsers)}      icon="" color="pink"   to="/users"    />
+        <KpiCard label="Items Received" value={fmt(summary?.totalStockIn)} icon="" color="blue" sub={`${summary?.stockInRecords} transactions`} to="/stockin" />
+        <KpiCard label="Items Issued" value={fmt(summary?.totalStockOut)} icon="" color="amber" sub={`${summary?.stockOutRecords} transactions`} to="/stockout" />
+        <KpiCard label="Net Stock" value={fmt(netStock)} icon="" color={netStock >= 0 ? 'green' : 'red'} sub="Received − Issued" />
+        <KpiCard label="Issue Rate" value={`${stockRate}%`} icon="" color="purple" sub="Of total received issued" />
+        <KpiCard label="Stock-In Records" value={fmt(summary?.stockInRecords)} icon="" color="cyan" to="/stockin" />
+        <KpiCard label="System Users" value={fmt(summary?.totalUsers)} icon="" color="pink" to="/users" />
       </div>
 
       {/* ══ TREND CHART ══════════════════════════════════════ */}
@@ -449,7 +449,7 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {items.map((item, idx) => {
-                const pct    = item.totalIn > 0 ? Math.round((item.totalOut / item.totalIn) * 100) : 0;
+                const pct = item.totalIn > 0 ? Math.round((item.totalOut / item.totalIn) * 100) : 0;
                 const status = item.remaining <= 0 ? 'out' : item.remaining < item.totalIn * 0.2 ? 'low' : 'ok';
                 const statusLabel = { ok: ' OK', low: ' Low', out: ' Out' }[status];
                 return (
