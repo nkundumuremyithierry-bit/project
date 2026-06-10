@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/connection');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requireAdminOrInsert } = require('../middleware/auth');
 
 // GET /api/stockout — list all with optional search
 router.get('/', requireAuth, async (req, res) => {
@@ -48,7 +48,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/stockout — create new stock-out
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAdminOrInsert, async (req, res) => {
   const { itemname, quantityout, stockoutdate } = req.body;
   if (!itemname || !quantityout || !stockoutdate)
     return res.status(400).json({ message: 'itemname, quantityout and stockoutdate are required.' });
@@ -87,7 +87,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PUT /api/stockout/:id — update
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   const { itemname, quantityout, stockoutdate } = req.body;
   if (!itemname || !quantityout || !stockoutdate) {
     return res.status(400).json({ message: 'itemname, quantityout, and stockoutdate are required.' });
@@ -142,7 +142,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // DELETE /api/stockout/:id
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     // Check if record exists
     const [existing] = await db.query('SELECT id FROM stockout WHERE id = ?', [req.params.id]);

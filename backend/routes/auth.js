@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db/connection');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
@@ -64,8 +64,8 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// POST /api/auth/register  (admin only seeding route)
-router.post('/register', async (req, res) => {
+// POST /api/auth/register  (admin only)
+router.post('/register', requireAdmin, async (req, res) => {
   const { username, password, role } = req.body;
   if (!username || !password)
     return res.status(400).json({ message: 'Username and password required.' });
@@ -96,7 +96,7 @@ router.get('/users', requireAuth, async (req, res) => {
 });
 
 // DELETE /api/auth/users/:id
-router.delete('/users/:id', requireAuth, async (req, res) => {
+router.delete('/users/:id', requireAdmin, async (req, res) => {
   try {
     // Check if record exists
     const [existing] = await db.query('SELECT id FROM users WHERE id = ?', [req.params.id]);
@@ -112,7 +112,7 @@ router.delete('/users/:id', requireAuth, async (req, res) => {
 });
 
 // PUT /api/auth/users/:id — update username, role, and optionally password
-router.put('/users/:id', requireAuth, async (req, res) => {
+router.put('/users/:id', requireAdmin, async (req, res) => {
   const { username, role, password } = req.body;
   const { id } = req.params;
   if (!username || !role)

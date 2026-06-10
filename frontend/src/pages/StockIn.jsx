@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const ITEMS = [
   'Steel Bars','Wheelbarrows','Ceramic Tiles','Cement',
@@ -134,6 +135,8 @@ const StockInModal = ({ mode, initial, onClose, onSaved }) => {
 
 /* ══════════════════════════════════════════════════════════════ */
 const StockIn = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [records, setRecords]   = useState([]);
   const [modal, setModal]       = useState(null); // { mode, record? }
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -253,14 +256,19 @@ const StockIn = () => {
                   <td style={{ fontSize: 13 }}>{r.stockindate?.slice(0,10)}</td>
                   <td><span className="user-pill">{r.recorded_by}</span></td>
                   <td className="action-cell">
-                    <button className="btn-edit-icon" title="Edit record"
-                      onClick={() => setModal({ mode: 'edit', record: { id: r.id, itemname: r.itemname, description: r.description || '', quantityin: r.quantityin, suppliername: r.suppliername || '', stockindate: r.stockindate?.slice(0,10) } })}>
-                      ✏️
-                    </button>
-                    <button className="btn-delete" title="Delete record"
-                      onClick={() => setDeleteTarget(r)}>
-                      
-                    </button>
+                    {isAdmin && (
+                      <>
+                        <button className="btn-edit-icon" title="Edit record"
+                          onClick={() => setModal({ mode: 'edit', record: { id: r.id, itemname: r.itemname, description: r.description || '', quantityin: r.quantityin, suppliername: r.suppliername || '', stockindate: r.stockindate?.slice(0,10) } })}>
+                          ✏️
+                        </button>
+                        <button className="btn-delete" title="Delete record"
+                          onClick={() => setDeleteTarget(r)}>
+                          🗑️
+                        </button>
+                      </>
+                    )}
+                    {!isAdmin && <span style={{ color: '#94a3b8', fontSize: 12 }}>View only</span>}
                   </td>
                 </tr>
               ))}

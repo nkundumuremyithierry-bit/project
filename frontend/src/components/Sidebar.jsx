@@ -3,17 +3,22 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: '' },
-  { to: '/stockin', label: 'Stock In', icon: '' },
-  { to: '/stockout', label: 'Stock Out', icon: '' },
-  { to: '/users', label: 'Users', icon: '' },
-  { to: '/report', label: 'Report', icon: '' },
+const allNavItems = [
+  { to: '/',         label: 'Dashboard', icon: '🏠', roles: ['admin', 'staff'] },
+  { to: '/stockin',  label: 'Stock In',  icon: '📦', roles: ['admin', 'staff'] },
+  { to: '/stockout', label: 'Stock Out', icon: '📤', roles: ['admin', 'staff'] },
+  { to: '/users',    label: 'Users',     icon: '👥', roles: ['admin'] },         // admin only
+  { to: '/report',   label: 'Report',    icon: '📊', roles: ['admin', 'staff'] },
 ];
 
 const Sidebar = ({ open, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Filter nav items by user role
+  const navItems = allNavItems.filter(item =>
+    item.roles.includes(user?.role)
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -64,3 +69,4 @@ const Sidebar = ({ open, onClose }) => {
 };
 
 export default Sidebar;
+

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/connection');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requireAdminOrInsert } = require('../middleware/auth');
 
 // GET /api/stockin — list all with optional search
 router.get('/', requireAuth, async (req, res) => {
@@ -49,7 +49,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/stockin — create new stock-in
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAdminOrInsert, async (req, res) => {
   const { itemname, description, quantityin, suppliername, stockindate } = req.body;
   if (!itemname || !quantityin || !stockindate) {
     return res.status(400).json({ message: 'itemname, quantityin, and stockindate are required.' });
@@ -79,7 +79,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PUT /api/stockin/:id — update
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   const { itemname, description, quantityin, suppliername, stockindate } = req.body;
   if (!itemname || !quantityin || !stockindate) {
     return res.status(400).json({ message: 'itemname, quantityin, and stockindate are required.' });
@@ -124,7 +124,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // DELETE /api/stockin/:id
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     // Check if record exists
     const [existing] = await db.query('SELECT id FROM stockin WHERE id = ?', [req.params.id]);

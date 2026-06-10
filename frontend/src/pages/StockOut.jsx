@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const ITEMS = [
   'Steel Bars','Wheelbarrows','Ceramic Tiles','Cement',
@@ -13,6 +14,8 @@ const emptyForm = {
 };
 
 const StockOut = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [records, setRecords] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
@@ -157,8 +160,13 @@ const StockOut = () => {
                   <td>{r.stockoutdate?.slice(0,10)}</td>
                   <td>{r.recorded_by}</td>
                   <td className="action-cell">
-                    <button className="btn-edit" onClick={() => handleEdit(r)}>✏️</button>
-                    <button className="btn-delete" onClick={() => handleDelete(r.id)}></button>
+                    {isAdmin && (
+                      <>
+                        <button className="btn-edit" onClick={() => handleEdit(r)}>✏️</button>
+                        <button className="btn-delete" onClick={() => handleDelete(r.id)}>🗑️</button>
+                      </>
+                    )}
+                    {!isAdmin && <span style={{ color: '#94a3b8', fontSize: 12 }}>View only</span>}
                   </td>
                 </tr>
               ))}
